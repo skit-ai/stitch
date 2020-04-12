@@ -7,6 +7,7 @@
                #:cl-arrows
                #:cl-cut
                #:cl-interpol
+               #:cl-slice
                #:cl-strings
                #:cl-wav
                #:serapeum)
