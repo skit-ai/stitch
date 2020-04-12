@@ -97,7 +97,7 @@ has same name as the labels file with extension changed."
 
 (defun find-plan-basic (sequence resources)
   "Very basic 1 by 1 stitching planner."
-  (let ((solo-resources (alexandria:flatten #'split-audio-resource resources))
+  (let ((solo-resources (alexandria:flatten (mapcar #'split-audio-resource resources)))
         (table (make-hash-table :test 'equal)))
     (loop for res in solo-resources
           do (setf (gethash (caar (audio-resource-values res)) table) res))
