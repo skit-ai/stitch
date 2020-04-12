@@ -1,0 +1,2 @@
+(defpackage #:stitch
+  (:use #:cl))
