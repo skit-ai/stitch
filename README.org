@@ -1,0 +1,27 @@
+#+TITLE: stitch
+
+Audio stitcher from pool of /labelled/ recordings. You put WAV recordings with
+audacity style labels marking lexical symbols along side with ame name as audio
+but =txt= extension. Then do something like the following:
+
+#+begin_src lisp
+(setf *resources* (mapcar #'audio-resource-from-label-file
+                          (list "./audios/alpha.txt"
+                                "./audios/num.txt"
+                                "./audios/rubbish.txt")))
+
+;; input is the sequence we want to generate
+(let ((input (list "b" "b" "1" "d" "c" "2" "2" "4"))
+      (out "out.wav"))
+  (uiop:delete-file-if-exists out)
+  (stitch-plan (find-plan input *resources*) out))
+#+end_src
+
+#+RESULTS:
+: #<SB-SYS:FD-STREAM for "file /run/media/lepisma/Data/Projects/vernacular/stitch/out.wav" {1002F78183}>
+
+** TODOs
++ [ ] Command line API.
++ [ ] Planner handling contiguous segments.
++ [ ] Support for positional bias for symbols.
++ [ ] Minor WAV reading optimizations.
