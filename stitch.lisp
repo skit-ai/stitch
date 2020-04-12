@@ -110,5 +110,5 @@ has same name as the labels file with extension changed."
 (defun stitch-plan (plan output-filepath)
   "Take the list of audio-resources (`plan'), stitch the final audio output and
 write to `output-filepath'."
-  (let ((slices (alexandria:flatten (mapcar (lambda (resource) (read-audio-resource-slices resource)) plan))))
+  (let ((slices (reduce #'append (mapcar (lambda (resource) (read-audio-resource-slices resource)) plan))))
     (wav:write-wav-file (reduce #'concat-wav-data slices) output-filepath)))
