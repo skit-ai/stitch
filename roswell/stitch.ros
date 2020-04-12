@@ -40,7 +40,7 @@ exec ros -Q -- $0 "$@"
   (remove-if-not (lambda (path) (cl-strings:ends-with path ".txt")) (mapcar #'namestring (uiop:directory-files dirpath))))
 
 (defun main (&rest argv)
-  (multiple-value-bind (options free-args) (opts:get-opts argv)
+  (let ((options (opts:get-opts argv)))
     (if (getf options :help)
         (opts:describe
          :prefix "Audio stitcher from pool of labelled recordings"
