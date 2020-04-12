@@ -46,6 +46,12 @@ labels is in order."
 has same name as the labels file with extension changed."
   (wav:read-wav-file (swap-extension label-filepath "wav")))
 
+(defun read-audio-resouce-slices (resource)
+  "Read slices listed in `resource'."
+  (let ((wav-data (read-wav-for-labels-file (audio-resource-filepath resource))))
+    (mapcar (lambda (label-info) (slice-wav-data wav-data (cadr label-info) (cddr label-info)))
+            (audio-resource-values resource))))
+
 ;; Planning
 
 (defun find-plan (sequence audio-resources)
