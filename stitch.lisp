@@ -44,12 +44,17 @@ labels is in order."
   "Return header size for the wave data."
   (- (plist-get (car data) :chunk-data-size) (data-size data)))
 
+(defun seconds-to-bytes (seconds fmt-chunk)
+  "Convert a second value to bytes offset using info from fmt-chunk."
+  (let ((sample-rate (plist-get (plist-get fmt-chunk :chunk-data) :sample-rate))
+        (bytes-per-sample (/ (plist-get (plist-get fmt-chunk :chunk-data) :significant-bits-per-sample) 8)))
+    (* bytes-per-sample (floor (* seconds sample-rate)))))
+
 (defun slice-wav-data (data start-time end-time)
   "Slice wav data (read from cl-wav) from start-time to end-time. Sample edges
 might not be very precise."
-  (let* ((bytes-per-second (plist-get (plist-get (cadr data) :chunk-data) :average-bytes-per-second))
-         (start-pos (floor (* start-time bytes-per-second)))
-         (end-pos (floor (* end-time bytes-per-second)))
+  (let* ((start-pos (seconds-to-bytes start-time (cadr data)))
+         (end-pos (seconds-to-bytes end-time (cadr data)))
          (slice-size (- end-pos start-pos)))
     (list (plist-set (car data) :chunk-data-size (+ slice-size (header-size data)))
           (cadr data)
@@ -62,8 +67,8 @@ components."
   (let* ((riff-chunk-a (car data-a))
          (riff-chunk-b (car data-b))
          (fmt-chunk (cadr data-a))
-         (data-size-a (data-size data-b))
-         (data-size-b (data-size data-a))
+         (data-size-a (data-size data-a))
+         (data-size-b (data-size data-b))
          (array-a (plist-get (caddr data-a) :chunk-data))
          (array-b (plist-get (caddr data-b) :chunk-data)))
     (list (plist-set riff-chunk-a :chunk-data-size (+ data-size-a data-size-b (header-size data-a)))
