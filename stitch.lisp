@@ -81,7 +81,7 @@ components."
 has same name as the labels file with extension changed."
   (wav:read-wav-file (swap-extension label-filepath "wav")))
 
-(defun read-audio-resouce-slices (resource)
+(defun read-audio-resource-slices (resource)
   "Read slices listed in `resource'."
   (let ((wav-data (read-wav-for-labels-file (audio-resource-filepath resource))))
     (mapcar (lambda (label-info) (slice-wav-data wav-data (cadr label-info) (cddr label-info)))
@@ -99,7 +99,7 @@ has same name as the labels file with extension changed."
   "Very basic 1 by 1 stitching planner."
   (let ((solo-resources (alexandria:flatten #'split-audio-resource resources))
         (table (make-hash-table :test 'equal)))
-    (loop for res in solo-resouces
+    (loop for res in solo-resources
           do (setf (gethash (caar (audio-resource-values res)) table) res))
     (mapcar (lambda (label) (gethash label table)) sequence)))
 
@@ -110,5 +110,5 @@ has same name as the labels file with extension changed."
 (defun stitch-plan (plan output-filepath)
   "Take the list of audio-resources (`plan'), stitch the final audio output and
 write to `output-filepath'."
-  (let ((slices (alexandria:flatten (mapcar (lambda (resource) (read-audio-resouce-slices resource)) plan))))
+  (let ((slices (alexandria:flatten (mapcar (lambda (resource) (read-audio-resource-slices resource)) plan))))
     (wav:write-wav-file (reduce #'concat-wav-data slices) output-filepath)))
