@@ -7,7 +7,7 @@
                #:cl-arrows
                #:cl-cut
                #:cl-interpol
-               #:cl-json
+               #:yason
                #:cl-slice
                #:cl-strings
                #:cl-wav

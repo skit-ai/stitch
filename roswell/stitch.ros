@@ -8,7 +8,7 @@ exec ros -Q -- $0 "$@"
   (ql:quickload '(:unix-opts
                   :uiop
                   :alexandria
-                  :cl-json
+                  :yason
                   :cl-strings
                   :stitch) :silent t))
 
@@ -39,6 +39,10 @@ exec ros -Q -- $0 "$@"
   "Return list of label files in directory. We assume wavs are also present."
   (remove-if-not (lambda (path) (cl-strings:ends-with path ".txt")) (mapcar #'namestring (uiop:directory-files dirpath))))
 
+(defun read-items-from-json (filepath)
+  (let* ((yason:*parse-object-as* :alist))
+    (yason:parse (alexandria:read-file-into-string filepath))))
+
 (defun main (&rest argv)
   (let ((options (opts:get-opts argv)))
     (if (getf options :help)
@@ -48,10 +52,10 @@ exec ros -Q -- $0 "$@"
          :usage-of "stitch"
          :args     "[FREE-ARGS]")
         (let* ((label-files (get-label-files (getf options :audio-dir)))
-               (items (cl-json:decode-json-from-string (alexandria:read-file-into-string (getf options :input-json))))
+               (items (read-items-from-json (getf options :input-json)))
                (resources (mapcar #'stitch:audio-resource-from-label-file label-files)))
           (loop for item in items
-                do (let* ((filename (concatenate 'string (getf options :output-dir) "/" (symbol-name (car item))))
+                do (let* ((filename (concatenate 'string (getf options :output-dir) "/" (car item)))
                           (sequence (cdr item)))
                      (format t "Writing ~a~&" filename)
                      (stitch:stitch-plan (stitch:find-plan sequence resources) filename)))))))
