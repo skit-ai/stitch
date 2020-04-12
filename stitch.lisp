@@ -31,10 +31,12 @@ labels is in order."
 ;; Wav interaction
 
 (defun slice-wav-data (data start-time end-time)
-  "Slice wav data (read from cl-wav) from start-time to end-time.")
+  "Slice wav data (read from cl-wav) from start-time to end-time."
+  (error 'error))
 
 (defun merge-wav-data (data-a data-b)
-  "Merge two wav data pieces in a one data piece.")
+  "Merge two wav data pieces in a one data piece."
+  (error 'error))
 
 (defun swap-extension (filepath new-ext)
   "Primitive extension swapping for files with single extension component."
@@ -55,7 +57,8 @@ has same name as the labels file with extension changed."
 ;; Planning
 
 (defun find-plan (sequence audio-resources)
-  "For the given list of sequence of symbols, look up audio resources.")
+  "For the given list of sequence of symbols, look up audio resources."
+  (error 'error))
 
 (defun stitch-plan (plan output-filepath)
   "Take the list of audio-resources (`plan'), stitch the final audio output and
