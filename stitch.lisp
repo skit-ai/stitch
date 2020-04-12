@@ -102,8 +102,14 @@ components."
   (let ((solo-resources (alexandria:flatten (mapcar #'split-audio-resource resources)))
         (table (make-hash-table :test 'equal)))
     (loop for res in solo-resources
-          do (setf (gethash (caar (audio-resource-values res)) table) res))
-    (mapcar (lambda (label) (gethash label table)) sequence)))
+          do (let* ((label (caar (audio-resource-values res)))
+                    (value (gethash label table)))
+               (setf (gethash label table) (cons res value))))
+    (mapcar (lambda (label)
+              ;; We assume everything is present
+              (let ((ress (gethash label table)))
+                (nth (random (length ress)) ress)))
+            sequence)))
 
 (defun find-plan (sequence resources)
   "For the given list of sequence of symbols, look up audio resources."
