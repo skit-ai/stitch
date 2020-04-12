@@ -56,9 +56,23 @@ has same name as the labels file with extension changed."
 
 ;; Planning
 
-(defun find-plan (sequence audio-resources)
+(defun split-audio-resource (resource)
+  "Split audio resource in multiple where each has "
+  (let ((filepath (audio-resource-filepath resource)))
+    (mapcar (lambda (label-info) (make-audio-resource :values (list label-info) :filepath filepath))
+            (audio-resource-values resource))))
+
+(defun find-plan-basic (sequence resources)
+  "Very basic 1 by 1 stitching planner."
+  (let ((solo-resources (alexandria:flatten #'split-audio-resource resources))
+        (table (make-hash-table :test 'equal)))
+    (loop for res in solo-resouces
+          do (setf (gethash (caar (audio-resource-values res)) table) res))
+    (mapcar (lambda (label) (gethash label table)) sequence)))
+
+(defun find-plan (sequence resources)
   "For the given list of sequence of symbols, look up audio resources."
-  (error 'error))
+  (find-plan-basic sequence resources))
 
 (defun stitch-plan (plan output-filepath)
   "Take the list of audio-resources (`plan'), stitch the final audio output and
