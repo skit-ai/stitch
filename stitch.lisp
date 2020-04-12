@@ -1,5 +1,19 @@
 (in-package #:stitch)
 
+;; General utils
+
+(defun plist-set (plist key new-value)
+  "Modify value of `key' in `plist' to be `new-value'."
+  (append (alexandria:remove-from-plist plist key) (list key new-value)))
+
+(defun plist-get (plist key)
+  (getf plist key))
+
+(defun swap-extension (filepath new-ext)
+  "Primitive extension swapping for files with single extension component."
+  (let ((splits (split filepath ".")))
+    (join (append (butlast splits) (list new-ext)) :separator ".")))
+
 ;; Label reading
 
 (defstruct audio-resource
@@ -19,7 +33,7 @@ labels is in order."
     (cons (nth 2 splits) (cons (parse-number:parse-positive-real-number (nth 0 splits))
                                (parse-number:parse-positive-real-number (nth 1 splits))))))
 
-(defun parse-labels (filepath)
+(defun audio-resource-from-label-file (filepath)
   "Parse audacity style label file `filepath'."
   (let ((lines (-<> filepath
                    alexandria:read-file-into-string
@@ -28,14 +42,13 @@ labels is in order."
                    (remove-if (lambda (line) (zerop (length line))) <>))))
     (make-audio-resource :values (mapcar #'parse-label-line lines) :filepath filepath)))
 
+(defun split-audio-resource (resource)
+  "Split audio resource in multiple where each has single symbol."
+  (let ((filepath (audio-resource-filepath resource)))
+    (mapcar (lambda (label-info) (make-audio-resource :values (list label-info) :filepath filepath))
+            (audio-resource-values resource))))
+
 ;; Wav interaction
-
-(defun plist-set (plist key new-value)
-  "Modify value of `key' in `plist' to be `new-value'."
-  (append (alexandria:remove-from-plist plist key) (list key new-value)))
-
-(defun plist-get (plist key)
-  (getf plist key))
 
 (defun data-size (data)
   (plist-get (caddr data) :chunk-data-size))
@@ -76,29 +89,13 @@ components."
           (plist-set (plist-set (caddr data-a) :chunk-data-size (+ data-size-a data-size-b))
                      :chunk-data (concatenate '(vector (unsigned-byte 8)) array-a array-b)))))
 
-(defun swap-extension (filepath new-ext)
-  "Primitive extension swapping for files with single extension component."
-  (let ((splits (split filepath ".")))
-    (join (append (butlast splits) (list new-ext)) :separator ".")))
-
-(defun read-wav-for-labels-file (label-filepath)
-  "Read wav file corresponding to the label file. We assume that that wav file
-has same name as the labels file with extension changed."
-  (wav:read-wav-file (swap-extension label-filepath "wav")))
-
 (defun read-audio-resource-slices (resource)
   "Read slices listed in `resource'."
-  (let ((wav-data (read-wav-for-labels-file (audio-resource-filepath resource))))
+  (let ((wav-data (wav:read-wav-file (swap-extension (audio-resource-filepath resource) "wav"))))
     (mapcar (lambda (label-info) (slice-wav-data wav-data (cadr label-info) (cddr label-info)))
             (audio-resource-values resource))))
 
 ;; Planning
-
-(defun split-audio-resource (resource)
-  "Split audio resource in multiple where each has "
-  (let ((filepath (audio-resource-filepath resource)))
-    (mapcar (lambda (label-info) (make-audio-resource :values (list label-info) :filepath filepath))
-            (audio-resource-values resource))))
 
 (defun find-plan-basic (sequence resources)
   "Very basic 1 by 1 stitching planner."
