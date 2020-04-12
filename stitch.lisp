@@ -58,4 +58,7 @@ has same name as the labels file with extension changed."
   "For the given list of sequence of symbols, look up audio resources.")
 
 (defun stitch-plan (plan output-filepath)
-  "Take the list of audio-resources stitch the final audio output and put in.")
+  "Take the list of audio-resources (`plan'), stitch the final audio output and
+write to `output-filepath'."
+  (let ((slices (alexandria:flatten (mapcar (lambda (resource) (read-audio-resouce-slices resource)) plan))))
+    (wav:write-wav-file (reduce #'merge-wav-data slices) output-filepath)))
