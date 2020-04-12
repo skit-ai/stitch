@@ -1,7 +1,7 @@
 #+TITLE: stitch
 
 Audio stitcher from pool of /labelled/ recordings. You put WAV recordings with
-audacity style labels marking lexical symbols along side with ame name as audio
+audacity style labels marking lexical symbols along side with same name as audio
 but =txt= extension. Then do something like the following:
 
 #+begin_src lisp
@@ -17,11 +17,20 @@ but =txt= extension. Then do something like the following:
   (stitch-plan (find-plan input *resources*) out))
 #+end_src
 
-#+RESULTS:
-: #<SB-SYS:FD-STREAM for "file /run/media/lepisma/Data/Projects/vernacular/stitch/out.wav" {1002F78183}>
+On command line, you can do the following:
+#+begin_src shell
+# json maps output filename to the sequence
+# {
+#   "abc.wav": ["a", "b", "c"],
+#   "numbers.wav": ["1", "2", "3"]
+# }
+
+# audio-dir contains labels and wav files
+
+./roswell/stitch.ros --input-json ./test.json --audio-dir ./audios/ --output-dir ./generated-audios
+#+end_src
 
 ** TODOs
-+ [ ] Command line API.
 + [ ] Planner handling contiguous segments.
 + [ ] Support for positional bias for symbols.
 + [ ] Minor WAV reading optimizations.
