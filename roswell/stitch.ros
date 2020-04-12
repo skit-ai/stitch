@@ -1,0 +1,57 @@
+#!/bin/sh
+#|-*- mode:lisp -*-|#
+#|
+exec ros -Q -- $0 "$@"
+|#
+(progn ;;init forms
+  (ros:ensure-asdf)
+  (ql:quickload '(:unix-opts
+                  :uiop
+                  :alexandria
+                  :cl-json
+                  :cl-strings
+                  :stitch) :silent t))
+
+(defpackage :ros.script.stitch.3795691847
+  (:use :cl))
+
+(in-package :ros.script.stitch.3795691847)
+
+(opts:define-opts
+  (:name :help
+   :description "print this help text"
+   :short #\h
+   :long "help")
+  (:name :input-json
+   :description "Input json mapping ids with list of symbols."
+   :arg-parser #'identity
+   :long "input-json")
+  (:name :audio-dir
+   :description "Directory with labelled audios."
+   :arg-parser #'identity
+   :long "audio-dir")
+  (:name :output-dir
+   :description "Output directory to keep audios in."
+   :arg-parser #'identity
+   :long "output-dir"))
+
+(defun get-label-files (dirpath)
+  "Return list of label files in directory. We assume wavs are also present."
+  (remove-if-not (lambda (path) (cl-strings:ends-with path ".txt")) (mapcar #'namestring (uiop:directory-files dirpath))))
+
+(defun main (&rest argv)
+  (multiple-value-bind (options free-args) (opts:get-opts argv)
+    (if (getf options :help)
+        (opts:describe
+         :prefix "Audio stitcher from pool of labelled recordings"
+         :suffix ""
+         :usage-of "stitch"
+         :args     "[FREE-ARGS]")
+        (let* ((label-files (get-label-files (getf options :audio-dir)))
+               (items (cl-json:decode-json-from-string (alexandria:read-file-into-string (getf options :input-json))))
+               (resources (mapcar #'stitch:audio-resource-from-label-file label-files)))
+          (loop for item in items
+                do (let* ((filename (concatenate 'string (getf options :output-dir) "/" (symbol-name (car item))))
+                          (sequence (cdr item)))
+                     (format t "Writing ~a~&" filename)
+                     (stitch:stitch-plan (stitch:find-plan sequence resources) filename)))))))

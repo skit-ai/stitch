@@ -7,9 +7,11 @@
                #:cl-arrows
                #:cl-cut
                #:cl-interpol
+               #:cl-json
                #:cl-slice
                #:cl-strings
                #:cl-wav
-               #:serapeum)
-  :components ((:file "package.lisp")
-               (:file "stitch.lisp")))
+               #:serapeum
+               #:unix-opts)
+  :components ((:file "package")
+               (:file "stitch")))
