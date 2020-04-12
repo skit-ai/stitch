@@ -1,2 +1,4 @@
 (defpackage #:stitch
-  (:use #:cl))
+  (:use #:cl
+        #:cl-strings
+        #:cl-arrows))
