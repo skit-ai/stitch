@@ -34,9 +34,28 @@ labels is in order."
   "Slice wav data (read from cl-wav) from start-time to end-time."
   (error 'error))
 
-(defun merge-wav-data (data-a data-b)
-  "Merge two wav data pieces in a one data piece."
-  (error 'error))
+(defun plist-set (plist key new-value)
+  "Modify value of `key' in `plist' to be `new-value'."
+  (append (alexandria:remove-from-plist plist key) (list key new-value)))
+
+(defun plist-get (plist key)
+  (getf plist key))
+
+(defun concat-wav-data (data-a data-b)
+  "Concatenate two wav data pieces in one. We assume same general structural
+components."
+  (let* ((riff-chunk-a (car data-a))
+         (riff-chunk-b (car data-b))
+         (fmt-chunk (cadr data-a))
+         (data-size-a (plist-get (nth 2 data-a) :chunk-data-size))
+         (data-size-b (plist-get (nth 2 data-b) :chunk-data-size))
+         (array-a (plist-get (nth 2 data-a) :chunk-data))
+         (array-b (plist-get (nth 2 data-b) :chunk-data))
+         (header-size (- (plist-get riff-chunk-a :chunk-data-size) data-size-a)))
+    (list (plist-set riff-chunk-a :chunk-data-size (+ data-size-a data-size-b header-size))
+          fmt-chunk
+          (plist-set (plist-set (nth 2 data-a) :chunk-data-size (+ data-size-a data-size-b))
+                     :chunk-data (concatenate '(vector (unsigned-byte 8)) array-a array-b)))))
 
 (defun swap-extension (filepath new-ext)
   "Primitive extension swapping for files with single extension component."
@@ -78,4 +97,4 @@ has same name as the labels file with extension changed."
   "Take the list of audio-resources (`plan'), stitch the final audio output and
 write to `output-filepath'."
   (let ((slices (alexandria:flatten (mapcar (lambda (resource) (read-audio-resouce-slices resource)) plan))))
-    (wav:write-wav-file (reduce #'merge-wav-data slices) output-filepath)))
+    (wav:write-wav-file (reduce #'concat-wav-data slices) output-filepath)))
