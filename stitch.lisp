@@ -1,8 +1,15 @@
 (in-package #:stitch)
 
+(defstruct audio-resource
+  "An audio resource represents slicing information and filepath for various
+symbols present in the file."
+  (values nil :type list)
+  (filepath nil :type string))
+
 (defun parse-label-line (line)
   "Parse a single audacity style label line. A line has three components.
-Start time (in seconds), end time and a label."
+Start time (in seconds), end time and a label. We assume that the sequence of
+labels is in order."
   (let ((splits (-> line
                    clean
                    (replace-all (make-string 1 :initial-element #\tab) (make-string 1 :initial-element #\ ))
@@ -17,4 +24,4 @@ Start time (in seconds), end time and a label."
                    clean
                    (split #\newline)
                    (remove-if (lambda (line) (zerop (length line))) <>))))
-    (mapcar #'parse-label-line lines)))
+    (make-audio-resource :values (mapcar #'parse-label-line lines) :filepath filepath)))
